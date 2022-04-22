@@ -25,7 +25,7 @@ from .shop.schema import ShopMutations, ShopQueries
 from .translations.schema import TranslationQueries
 from .warehouse.schema import StockQueries, WarehouseMutations, WarehouseQueries
 from .webhook.schema import WebhookMutations, WebhookQueries
-
+from .preorder.schema import PreOrderQueries, PreOrderMutations
 API_PATH = SimpleLazyObject(lambda: reverse("api"))
 
 
@@ -41,7 +41,7 @@ class Query(
     PluginsQueries,
     GiftCardQueries,
     MenuQueries,
-    OrderQueries,
+    # OrderQueries,
     PageQueries,
     PaymentQueries,
     ProductQueries,
@@ -51,6 +51,7 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    PreOrderQueries,
 ):
     pass
 
@@ -60,7 +61,7 @@ class Mutation(
     AppMutations,
     AttributeMutations,
     ChannelMutations,
-    CheckoutMutations,
+    # CheckoutMutations,
     CoreMutations,
     CsvMutations,
     DiscountMutations,
@@ -77,6 +78,7 @@ class Mutation(
     ShopMutations,
     WarehouseMutations,
     WebhookMutations,
+    PreOrderMutations
 ):
     pass
 
