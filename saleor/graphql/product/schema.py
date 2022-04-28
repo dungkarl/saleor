@@ -1,9 +1,10 @@
 import graphene
-
+from graphene_django import DjangoObjectType
 from saleor.core.tracing import traced_resolver
 
+from ...product import models as product_models
 from ...core.permissions import ProductPermissions, has_one_of_permissions
-from ...product.models import ALL_PRODUCTS_PERMISSIONS
+from ...product.models import ALL_PRODUCTS_PERMISSIONS, FlatProduct
 from ..channel import ChannelContext
 from ..channel.utils import get_default_channel_slug_or_graphql_error
 from ..core.enums import ReportingPeriod
@@ -105,6 +106,7 @@ from .resolvers import (
     resolve_products,
     resolve_report_product_sales,
     resolve_variant_by_id,
+    resolve_flatproducts,
 )
 from .sorters import (
     CategorySortingInput,
@@ -119,7 +121,18 @@ from .types import (
     Product,
     ProductType,
     ProductVariant,
+    FlatProduct
 )
+
+
+class FlatProductQueries(graphene.ObjectType):
+    flatproducts = graphene.List(
+        FlatProduct,
+        description="Look up a product type by ID.",
+    )
+
+    def resolve_flatproducts(self, info, **kwargs):
+        return resolve_flatproducts(info, **kwargs)
 
 
 class ProductQueries(graphene.ObjectType):

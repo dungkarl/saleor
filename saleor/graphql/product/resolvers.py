@@ -177,3 +177,8 @@ def resolve_report_product_sales(period, channel_slug) -> ChannelQsContext:
     qs = qs.order_by("-quantity_ordered")
 
     return ChannelQsContext(qs=qs, channel_slug=channel_slug)
+
+
+def resolve_flatproducts(info, **_kwargs):
+    qs = models.FlatProduct.objects.all().order_by("-id")
+    return qs

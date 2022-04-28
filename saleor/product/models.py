@@ -458,6 +458,29 @@ class Product(SeoModel, ModelWithMetadata):
         return ["concatenated_values_order", "concatenated_values", "name"]
 
 
+class FlatProduct(SeoModel, ModelWithMetadata):
+    product = models.OneToOneField(Product, null=True, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    sku = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(blank=True)
+    picture = models.CharField(max_length=100, blank=True, null=True)
+    weight = MeasurementField(
+        measurement=Weight,
+        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        blank=True,
+        null=True,
+    )
+    width = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    depth = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        if self.name:
+            return self.name
+        return ""
+
+
+
 class ProductTranslation(SeoModelTranslation):
     product = models.ForeignKey(
         Product, related_name="translations", on_delete=models.CASCADE

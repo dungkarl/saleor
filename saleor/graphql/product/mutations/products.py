@@ -636,6 +636,21 @@ class ProductCreate(ModelMutation):
     @traced_atomic_transaction()
     def save(cls, info, instance, cleaned_input):
         instance.save()
+        name = cleaned_input.get('name')
+        weight = cleaned_input.get('weight')
+        data_input_flatproduct = {
+            "name": name,
+            "weight": weight,
+            "product_id": instance.id,
+            "sku": cleaned_input.get('sku'),
+            "height": cleaned_input.get('height'),
+            "depth": cleaned_input.get('depth'),
+            "width": cleaned_input.get('width'),
+            "description": cleaned_input.get('description')
+
+        }
+        flat_product = models.FlatProduct.objects.create(**data_input_flatproduct)
+
         attributes = cleaned_input.get("attributes")
         if attributes:
             AttributeAssignmentMixin.save(instance, attributes)

@@ -7,4 +7,5 @@ from .products import (
     ProductMedia,
     ProductType,
     ProductVariant,
+    FlatProduct
 )
