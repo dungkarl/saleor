@@ -1378,12 +1378,12 @@ class ProductImage(graphene.ObjectType):
         return info.context.build_absolute_uri(url)
 
 
-class FlatProduct(graphene.ObjectType):
-    id = graphene.ID()
+class FlatProduct(CountableDjangoObjectType):
+    # id = graphene.ID()
     name = graphene.String()
-    width = graphene.Float()
+    weight = graphene.Float()
 
     class Meta:
         model = models.FlatProduct
-        fields = ["id", "name", "weight", "width"]
-        # interfaces = [relay.Node]
+        only_fields = ["id", "name", "weight", "width"]
+        interfaces = [relay.Node, ObjectWithMetadata]

@@ -459,7 +459,7 @@ class Product(SeoModel, ModelWithMetadata):
 
 
 class FlatProduct(SeoModel, ModelWithMetadata):
-    product = models.OneToOneField(Product, null=True, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, null=True, blank=True)
     sku = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(blank=True)
