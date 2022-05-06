@@ -46,6 +46,7 @@ class OrderFulfillLineInput(graphene.InputObjectType):
         required=True,
         description="List of stock items to create.",
     )
+    alternative_sku = graphene.String(description="alternative_sku", required=True)
 
 
 class OrderFulfillInput(graphene.InputObjectType):
@@ -91,6 +92,7 @@ class OrderFulfill(BaseMutation):
         input = OrderFulfillInput(
             required=True, description="Fields required to create an fulfillment."
         )
+
 
     class Meta:
         description = "Creates new fulfillments for an order."
@@ -198,7 +200,9 @@ class OrderFulfill(BaseMutation):
                         stock["warehouse"], only_type=Warehouse, field="warehouse"
                     )
                     lines_for_warehouses[warehouse_pk].append(
-                        {"order_line": order_line, "quantity": stock["quantity"]}
+                        {"order_line": order_line, "quantity": stock["quantity"],
+                         "alternative_sku": line["alternative_sku"]
+                         }
                     )
 
         data["order_lines"] = order_lines

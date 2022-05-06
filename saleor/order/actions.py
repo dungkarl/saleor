@@ -495,6 +495,7 @@ def _create_fulfillment_lines(
     for line in lines_data:
         quantity = line["quantity"]
         order_line = line["order_line"]
+        alternative_sku = line["alternative_sku"]
         if quantity > 0:
             line_stocks = variant_to_stock.get(order_line.variant_id)
             stock = line_stocks[0] if line_stocks else None
