@@ -133,6 +133,8 @@ class OrderQueries(graphene.ObjectType):
     def resolve_order_by_token(self, _info, token):
         return resolve_order_by_token(token)
 
+    def resolve_preorders(self, info, **kwargs):
+        return resolve_preorders(info)
 
 class OrderMutations(graphene.ObjectType):
     draft_order_complete = DraftOrderComplete.Field()

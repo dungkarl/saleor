@@ -363,7 +363,7 @@ class BaseMutation(graphene.Mutation):
         return cls(errors=errors, **extra)
 
 
-class ModelMutation(BaseMutation):
+class  ModelMutation(BaseMutation):
     class Meta:
         abstract = True
 

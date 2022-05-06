@@ -287,10 +287,13 @@ def _create_lines_for_order(
         variant_translation["product_variant_id"]: variant_translation.get("name")
         for variant_translation in variants_translation
     }
-
-    check_stock_quantity_bulk(
-        variants, country_code, quantities, checkout_info.channel.slug
-    )
+    try:
+        check_stock_quantity_bulk(
+            variants, country_code, quantities, checkout_info.channel.slug
+        )
+    except InsufficientStock as e:
+        if not checkout_info.checkout.metadata.get('requested_shipment_date', None):
+            raise e
 
     return [
         _create_line_for_order(
@@ -422,6 +425,11 @@ def _create_order(
         if site_settings.automatically_confirm_all_new_orders
         else OrderStatus.UNCONFIRMED
     )
+    requested_shipment_date = checkout.metadata.get('requested_shipment_date', None)
+    is_preorder = checkout.metadata.get('is_preorder', False)
+    if requested_shipment_date and is_preorder:
+        order_data['requested_shipment_date'] = requested_shipment_date
+        order_data['is_preorder'] = is_preorder
     order = Order.objects.create(
         **order_data,
         checkout_token=checkout.token,
@@ -460,7 +468,8 @@ def _create_order(
     OrderLine.objects.bulk_create(order_lines)
 
     country_code = checkout_info.get_country()
-    allocate_stocks(order_lines_info, country_code, checkout_info.channel.slug)
+    if not is_preorder:
+        allocate_stocks(order_lines_info, country_code, checkout_info.channel.slug)
 
     # Add gift cards to the order
     for gift_card in checkout.gift_cards.select_for_update():
