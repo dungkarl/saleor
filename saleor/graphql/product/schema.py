@@ -126,7 +126,7 @@ from .types import (
 
 
 class FlatProductQueries(graphene.ObjectType):
-    flatproducts = graphene.List(
+    flatproducts = FilterInputConnectionField(
         FlatProduct,
         description="Look up a product type by ID.",
     )

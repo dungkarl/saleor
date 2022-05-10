@@ -1380,10 +1380,12 @@ class ProductImage(graphene.ObjectType):
 
 class FlatProduct(CountableDjangoObjectType):
     # id = graphene.ID()
-    name = graphene.String()
-    weight = graphene.Float()
+    # name = graphene.String()
+    # weight = graphene.Float()
 
     class Meta:
+        # default_resolver = ChannelContextType.resolver_with_context
+        interfaces = [relay.Node, ObjectWithMetadata]
         model = models.FlatProduct
         only_fields = ["id", "name", "weight", "width"]
-        interfaces = [relay.Node, ObjectWithMetadata]
+
