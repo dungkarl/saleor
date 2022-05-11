@@ -649,7 +649,7 @@ class ProductCreate(ModelMutation):
             "description": cleaned_input.get('description')
 
         }
-        flat_product = models.FlatProduct.objects.create(**data_input_flatproduct)
+        models.FlatProduct.objects.create(**data_input_flatproduct)
 
         attributes = cleaned_input.get("attributes")
         if attributes:
