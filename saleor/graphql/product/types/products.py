@@ -1387,5 +1387,5 @@ class FlatProduct(CountableDjangoObjectType):
         # default_resolver = ChannelContextType.resolver_with_context
         interfaces = [relay.Node, ObjectWithMetadata]
         model = models.FlatProduct
-        only_fields = ["id", "name", "weight", "width"]
+        only_fields = ["id", "name", "weight", "width", "sku"]
 
