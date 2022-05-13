@@ -161,7 +161,7 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
             channel_alternative_pks = [checkout.alternative_channel_id for checkout in
                                        checkouts]
 
-            def with_channel(channels, channels_alternative):
+            def with_channel(channels, channels_alternative=[]):
                 billing_address_ids = {
                     checkout.billing_address_id
                     for checkout in checkouts
@@ -299,7 +299,7 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
 
             return (
                 ChannelByIdLoader(self.context)
-                .load_many(channel_pks)
+                .load_many(channel_pks, channel_alternative_pks)
                 .then(with_channel)
             )
 
