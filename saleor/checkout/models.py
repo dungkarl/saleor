@@ -53,7 +53,7 @@ class Checkout(ModelWithMetadata):
     )
     alternative_channel = models.ForeignKey(
         Channel,
-        related_name="checkouts_alternative",
+        related_name="alternative_checkouts",
         on_delete=models.PROTECT,
         null=True,
         blank=True
