@@ -158,8 +158,10 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
             from ..channel.dataloaders import ChannelByIdLoader
 
             channel_pks = [checkout.channel_id for checkout in checkouts]
+            alternative_channel_pks = [checkout.alternative_channel_id for checkout in
+                                       checkouts]
 
-            def with_channel(channels):
+            def with_channel(channels, alternative_channels=[]):
                 billing_address_ids = {
                     checkout.billing_address_id
                     for checkout in checkouts
@@ -220,8 +222,8 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
                     voucher_map = {voucher.code: voucher for voucher in vouchers}
 
                     checkout_info_map = {}
-                    for key, checkout, channel, checkout_lines in zip(
-                        keys, checkouts, channels, checkout_line_infos
+                    for key, checkout, channel, alternative_channel, checkout_lines in zip(
+                        keys, checkouts, channels, alternative_channels, checkout_line_infos
                     ):
                         shipping_method = shipping_method_map.get(
                             checkout.shipping_method_id
@@ -245,6 +247,7 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
                             checkout=checkout,
                             user=user_map.get(checkout.user_id),
                             channel=channel,
+                            alternative_channel=alternative_channel,
                             billing_address=address_map.get(
                                 checkout.billing_address_id
                             ),
@@ -296,7 +299,7 @@ class CheckoutInfoByCheckoutTokenLoader(DataLoader):
 
             return (
                 ChannelByIdLoader(self.context)
-                .load_many(channel_pks)
+                .load_many(channel_pks, alternative_channel_pks)
                 .then(with_channel)
             )
 
