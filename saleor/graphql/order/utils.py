@@ -276,3 +276,7 @@ def prepare_insufficient_stock_order_validation_errors(exc):
             )
         )
     return errors
+
+
+def create_product_for_sku_to_stock(origin_sku, alternative_sku):
+    pass

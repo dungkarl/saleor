@@ -479,12 +479,18 @@ def _create_fulfillment_lines(
     """
     lines = [line_data["order_line"] for line_data in lines_data]
     variants = [line.variant for line in lines]
+    from ..product.models import ProductVariant
+    alternative_skus = [x["alternative_sku"] for x in lines_data if "alternative_sku" in x]
+    # alternative_variants = []
+    if alternative_skus:
+        alternative_variants = ProductVariant.objects.filter(sku__in=alternative_skus)
+        variants = list(alternative_variants)
+
     stocks = (
         Stock.objects.for_channel(channel_slug)
         .filter(warehouse_id=warehouse_pk, product_variant__in=variants)
         .select_related("product_variant")
     )
-
     variant_to_stock: Dict[str, List[Stock]] = defaultdict(list)
     for stock in stocks:
         variant_to_stock[stock.product_variant_id].append(stock)
@@ -495,7 +501,6 @@ def _create_fulfillment_lines(
     for line in lines_data:
         quantity = line["quantity"]
         order_line = line["order_line"]
-        alternative_sku = line["alternative_sku"]
         if quantity > 0:
             line_stocks = variant_to_stock.get(order_line.variant_id)
             stock = line_stocks[0] if line_stocks else None

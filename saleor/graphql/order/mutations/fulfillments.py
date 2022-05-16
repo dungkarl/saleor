@@ -46,12 +46,30 @@ class OrderFulfillLineInput(graphene.InputObjectType):
         required=True,
         description="List of stock items to create.",
     )
+
+class OrderFulfillLineAlterInput(OrderFulfillLineInput):
     alternative_sku = graphene.String(description="alternative_sku", required=True)
 
 
 class OrderFulfillInput(graphene.InputObjectType):
     lines = graphene.List(
         graphene.NonNull(OrderFulfillLineInput),
+        required=True,
+        description="List of items informing how to fulfill the order.",
+    )
+    notify_customer = graphene.Boolean(
+        description="If true, send an email notification to the customer."
+    )
+
+    allow_stock_to_be_exceeded = graphene.Boolean(
+        description="If true, then allow proceed fulfillment when stock is exceeded.",
+        default_value=False,
+    )
+
+
+class OrderFulfillAlterInput(OrderFulfillInput):
+    lines = graphene.List(
+        graphene.NonNull(OrderFulfillLineAlterInput),
         required=True,
         description="List of items informing how to fulfill the order.",
     )
@@ -191,7 +209,6 @@ class OrderFulfill(BaseMutation):
         cls.clean_lines(order_lines, quantities_for_lines)
 
         cls.check_total_quantity_of_items(quantities_for_lines)
-
         lines_for_warehouses = defaultdict(list)
         for line, order_line in zip(lines, order_lines):
             for stock in line["stocks"]:
@@ -200,9 +217,9 @@ class OrderFulfill(BaseMutation):
                         stock["warehouse"], only_type=Warehouse, field="warehouse"
                     )
                     lines_for_warehouses[warehouse_pk].append(
-                        {"order_line": order_line, "quantity": stock["quantity"],
-                         "alternative_sku": line["alternative_sku"]
-                         }
+                        {
+                            "order_line": order_line, "quantity": stock["quantity"]
+                        }
                     )
 
         data["order_lines"] = order_lines
@@ -239,6 +256,72 @@ class OrderFulfill(BaseMutation):
             raise ValidationError({"stocks": errors})
 
         return OrderFulfill(fulfillments=fulfillments, order=order)
+
+
+class OrderFullfillAlternative(OrderFulfill):
+    fulfillments = graphene.List(
+        Fulfillment, description="List of created fulfillments."
+    )
+    order = graphene.Field(Order, description="Fulfilled order.")
+
+    class Arguments:
+        order = graphene.ID(
+            description="ID of the order to be fulfilled.", name="order"
+        )
+        input = OrderFulfillAlterInput(
+            required=True, description="Fields required to create an fulfillment."
+        )
+
+    class Meta:
+        description = "Creates new fulfillments for an order."
+        permissions = (OrderPermissions.MANAGE_ORDERS,)
+        error_type_class = OrderError
+        error_type_field = "order_errors"
+
+    @classmethod
+    def clean_input(cls, data):
+        lines = data["lines"]
+
+        warehouse_ids_for_lines = [
+            [stock["warehouse"] for stock in line["stocks"]] for line in lines
+        ]
+        cls.check_warehouses_for_duplicates(warehouse_ids_for_lines)
+
+        quantities_for_lines = [
+            [stock["quantity"] for stock in line["stocks"]] for line in lines
+        ]
+
+        lines_ids = [line["order_line_id"] for line in lines]
+        cls.check_lines_for_duplicates(lines_ids)
+        order_lines = cls.get_nodes_or_error(
+            lines_ids, field="lines", only_type=OrderLine
+        )
+
+        cls.clean_lines(order_lines, quantities_for_lines)
+
+        cls.check_total_quantity_of_items(quantities_for_lines)
+        lines_for_warehouses = defaultdict(list)
+        for line, order_line in zip(lines, order_lines):
+            for stock in line["stocks"]:
+                if stock["quantity"] > 0:
+                    warehouse_pk = cls.get_global_id_or_error(
+                        stock["warehouse"], only_type=Warehouse, field="warehouse"
+                    )
+                    lines_for_warehouses[warehouse_pk].append(
+                        {
+                            "order_line": order_line, "quantity": stock["quantity"],
+                            "alternative_sku": line["alternative_sku"]
+                        }
+                    )
+
+        data["order_lines"] = order_lines
+        data["quantities"] = quantities_for_lines
+        data["lines_for_warehouses"] = lines_for_warehouses
+        return data
+
+    # @classmethod
+    # def perform_mutation(cls, _root, info, order, **data):
+    #     pass
 
 
 class FulfillmentUpdateTracking(BaseMutation):
