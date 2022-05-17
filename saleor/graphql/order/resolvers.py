@@ -16,7 +16,7 @@ ORDER_SEARCH_FIELDS = ("id", "discount_name", "token", "user_email", "user__emai
 def resolve_orders(_info, channel_slug, **_kwargs):
     qs = models.Order.objects.non_draft()
     if channel_slug:
-        qs = qs.filter(channel__slug=str(channel_slug))
+        qs = qs.filter(channel__slug=str(channel_slug)).order_by("-id")
     return qs
 
 
@@ -106,3 +106,7 @@ def resolve_order_shipping_methods(root: models.Order, info, include_active_only
         )
 
     return ChannelByIdLoader(info.context).load(root.channel_id).then(with_channel)
+
+
+def resolve_alter_sku_orders(_info, channel_slug, **_kwargs):
+    return models.Order.objects.all().filter(lines__original_sku__isnull=False)

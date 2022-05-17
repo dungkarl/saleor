@@ -60,6 +60,7 @@ from .utils import (
     restock_fulfillment_lines,
     update_order_status,
 )
+from django.db.models import Q
 
 if TYPE_CHECKING:
     from ..app.models import App
@@ -479,12 +480,23 @@ def _create_fulfillment_lines(
     """
     lines = [line_data["order_line"] for line_data in lines_data]
     variants = [line.variant for line in lines]
+    from ..product.models import ProductVariant
+    alternative_skus = [x["alternative_sku"] for x in lines_data if "alternative_sku" in x]
+    lines_zip = zip(lines, alternative_skus)
+    for line, alter_sku in lines_zip:
+        line.original_sku = line.product_sku
+        line.product_sku = alter_sku
+        line.save()
+
+    if alternative_skus:
+        alternative_variants = ProductVariant.objects.filter(sku__in=alternative_skus)
+        variants = list(alternative_variants)
+
     stocks = (
         Stock.objects.for_channel(channel_slug)
         .filter(warehouse_id=warehouse_pk, product_variant__in=variants)
         .select_related("product_variant")
     )
-
     variant_to_stock: Dict[str, List[Stock]] = defaultdict(list)
     for stock in stocks:
         variant_to_stock[stock.product_variant_id].append(stock)
@@ -492,11 +504,15 @@ def _create_fulfillment_lines(
     insufficient_stocks = []
     fulfillment_lines = []
     lines_info = []
-    for line in lines_data:
+    for line, alter_variant in zip(lines_data, variants):
         quantity = line["quantity"]
         order_line = line["order_line"]
         if quantity > 0:
-            line_stocks = variant_to_stock.get(order_line.variant_id)
+            # variant = order_line.variant
+            # alter_products = ProductVariant.objects.all().filter(sku=line['alternative_sku'])
+            line_stocks = variant_to_stock.get(alter_variant.id)
+            # alter_product_id = next((x.id for x in alter_products), variant.id)
+            # line_stocks = variant_to_stock.get(alter_product_id)
             stock = line_stocks[0] if line_stocks else None
 
             # If there is no stock but allow_stock_to_be_exceeded == True
