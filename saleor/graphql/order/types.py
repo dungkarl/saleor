@@ -452,8 +452,8 @@ class OrderLine(CountableDjangoObjectType):
         DiscountValueTypeEnum,
         description="Type of the discount: fixed or percent",
     )
-    alternative_sku = graphene.String(
-        description="Alternative sku",
+    original_sku = graphene.String(
+        description="Original sku",
     )
 
     class Meta:
@@ -471,6 +471,7 @@ class OrderLine(CountableDjangoObjectType):
             "quantity_fulfilled",
             "tax_rate",
             "unit_discount_reason",
+            "original_sku"
         ]
 
     @staticmethod

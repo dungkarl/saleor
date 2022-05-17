@@ -52,6 +52,7 @@ from .resolvers import (
     resolve_order_by_token,
     resolve_orders,
     resolve_orders_total,
+    resolve_alter_sku_orders
 )
 from .sorters import OrderSortingInput
 from .types import Order, OrderEvent
@@ -109,6 +110,15 @@ class OrderQueries(graphene.ObjectType):
         description="Look up an order by token.",
         token=graphene.Argument(UUID, description="The order's token.", required=True),
     )
+    alter_sku_orders = FilterInputConnectionField(
+        Order,
+        sort_by=OrderSortingInput(description="Sort orders."),
+        filter=OrderFilterInput(description="Filtering options for orders."),
+        channel=graphene.String(
+            description="Slug of a channel for which the data should be returned."
+        ),
+        description="List order alter sku",
+    )
 
     @permission_required(OrderPermissions.MANAGE_ORDERS)
     def resolve_homepage_events(self, *_args, **_kwargs):
@@ -133,6 +143,9 @@ class OrderQueries(graphene.ObjectType):
 
     def resolve_order_by_token(self, _info, token):
         return resolve_order_by_token(token)
+
+    def resolve_alter_sku_orders(self, info, channel=None, **_kwargs):
+        return resolve_alter_sku_orders(info, channel)
 
 
 class OrderMutations(graphene.ObjectType):
