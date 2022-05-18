@@ -19,7 +19,7 @@ from .order.schema import OrderMutations, OrderQueries
 from .page.schema import PageMutations, PageQueries
 from .payment.schema import PaymentMutations, PaymentQueries
 from .plugins.schema import PluginsMutations, PluginsQueries
-from .product.schema import ProductMutations, ProductQueries
+from .product.schema import ProductMutations, ProductQueries, FlatProductQueries
 from .shipping.schema import ShippingMutations, ShippingQueries
 from .shop.schema import ShopMutations, ShopQueries
 from .translations.schema import TranslationQueries
@@ -51,6 +51,7 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    FlatProductQueries,
 ):
     pass
 

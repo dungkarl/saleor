@@ -6,6 +6,7 @@ import graphene
 from django.conf import settings
 from django_countries.fields import Country
 from graphene import relay
+from graphene_django import DjangoObjectType
 from graphene_federation import key
 
 from ....attribute import models as attribute_models
@@ -1375,3 +1376,16 @@ class ProductImage(graphene.ObjectType):
         else:
             url = root.image.url
         return info.context.build_absolute_uri(url)
+
+
+class FlatProduct(CountableDjangoObjectType):
+    # id = graphene.ID()
+    # name = graphene.String()
+    # weight = graphene.Float()
+
+    class Meta:
+        # default_resolver = ChannelContextType.resolver_with_context
+        interfaces = [relay.Node, ObjectWithMetadata]
+        model = models.FlatProduct
+        only_fields = ["id", "name", "weight", "width", "sku"]
+
