@@ -1,6 +1,7 @@
 import graphene
 
 from saleor.graphql.core.types.common import StockError
+from saleor.graphql.warehouse.types import Warehouse
 from saleor.warehouse import models
 from saleor.graphql.core.mutations import ModelMutation
 from .. import models
@@ -16,11 +17,11 @@ def check_stock_product_variant_available(source, quantity_requested, product_va
 
 
 class CreateTransferStockInput(graphene.InputObjectType):
-    source_warehouse = graphene.ID(
+    source_warehouse_id = graphene.ID(
         required=True,
         description="Warehouse send product"
     )
-    next_warehouse = graphene.ID(
+    next_warehouse_id = graphene.ID(
         required=True,
         description="Warehouse recipe product")
     product_variant = graphene.ID(
@@ -33,14 +34,18 @@ class CreateTransferStockInput(graphene.InputObjectType):
     )
 
 
+class ApprovedTransferStockInput(graphene.InputObjectType):
+    requested_id = graphene.ID(
+        description="Transfer stock ID",
+        required=True
+    )
+
+
 class CreateTransferStock(ModelMutation):
     created = graphene.Field(
         graphene.Boolean,
         description=(
-            "Whether the checkout was created or the current active one was returned. "
-            "Refer to checkoutLinesAdd and checkoutLinesUpdate to merge a cart "
-            "with an active checkout."
-            "DEPRECATED: Will be removed in Saleor 4.0. Always returns True."
+            "Whether the transfer stock was created or the current active one was returned. "
         ),
     )
 
@@ -79,10 +84,32 @@ class CreateTransferStock(ModelMutation):
 
     @classmethod
     def perform_mutation(cls, _root, info, **data):
-        # source_warehouse = data.get("source_warehouse")
-        # next_warehouse = data.get("next_warehouse")
-        # super(cls, CreateTransferStock).perform_mutation()
+        source_warehouse_id = data.get("source_warehouse_id")
+        next_warehouse_id = data.get("next_warehouse_id")
+        source_warehouse = cls.get_node_or_error(info, source_warehouse_id, only_type=Warehouse)
+        next_warehouse = cls.get_node_or_error(info, next_warehouse_id,
+                                                 only_type=Warehouse)
+
         res = super().perform_mutation(_root, info, **data)
         return res
 
 
+class ApprovedTransferStockCreate(ModelMutation):
+    created = graphene.Field(
+        graphene.Boolean,
+        description=(
+            "Whether the approved transfer stock was created or the current active one was returned. "
+        ),
+    )
+
+    class Arguments:
+        input = ApprovedTransferStockInput(
+            required=True, description="Fields required to create transfer stock."
+        )
+
+    class Meta:
+        description = "Approve transfer stock by admin"
+        model = models.StockNotify
+        # permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = StockError
+        error_type_field = "transfer_stock_error"
