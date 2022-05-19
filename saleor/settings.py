@@ -228,6 +228,7 @@ INSTALLED_APPS = [
     "saleor.wishlist",
     "saleor.app",
     "custom",
+    "transferstock",
     # External apps
     "versatileimagefield",
     "django_measurement",
@@ -568,6 +569,7 @@ BUILTIN_PLUGINS = [
     "saleor.plugins.admin_email.plugin.AdminEmailPlugin",
     "saleor.plugins.sendgrid.plugin.SendgridEmailPlugin",
     "saleor.plugins.custom.plugin.CustomPlugin",
+    # "saleor.plugins.transferstock.plugin.TransferStockPlugin",
 ]
 
 # Plugin discovery
