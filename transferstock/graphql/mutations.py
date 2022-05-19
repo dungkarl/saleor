@@ -4,6 +4,15 @@ from saleor.graphql.warehouse.types import Warehouse
 from saleor.graphql.core.mutations import ModelMutation
 from .. import models
 from .types import TransferStockRequest
+from saleor.warehouse.models import Stock
+
+
+def check_stock_product_variant_available(source_warehouse, quantity_requested, product_variant):
+    warehouse_stock_source = Stock.objects.filter(warehouse=source_warehouse,
+                                            product_variant=product_variant).first()
+    if warehouse_stock_source.annotate_available_quantity() < quantity_requested:
+        raise TransferErrorCode
+
 
 class TransferStockRequestInput(graphene.InputObjectType):
     source_warehouse_id = graphene.ID(

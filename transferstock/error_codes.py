@@ -7,3 +7,5 @@ class TransferStockErrorCode(str, Enum):
     NOT_FOUND = "not_found"
     REQUIRED = "required"
     UNIQUE = "unique"
+    STOCK_NOT_ENOUGH = "stock_not_enough"
+    STOCK_INVALID = "stock_invalid"
